@@ -1,7 +1,7 @@
 import os
 import json
 import requests
-import pandas as pd
+import csv
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -59,11 +59,15 @@ def login_and_extract_data():
                 "country_name": user_data.get("countryInfo", {}).get("name"),
                 "department_name": user_data.get("department_info", {}).get("department_name"),
             }
+            
+              # Save as CSV
+            csv_filename = "./DATA/user_info.csv"
+            os.makedirs(os.path.dirname(csv_filename), exist_ok=True)  # Ensure the directory exists
 
-            # Convert to DataFrame and save as CSV
-            df = pd.DataFrame([extracted_info])
-            csv_filename = "user_info.csv"
-            df.to_csv(csv_filename, index=False)
+            with open(csv_filename, mode='w', newline='', encoding='utf-8') as csv_file:
+                writer = csv.DictWriter(csv_file, fieldnames=extracted_info.keys())
+                writer.writeheader()
+                writer.writerow(extracted_info)
 
             print(f"CSV file '{csv_filename}' saved successfully!")
 
@@ -77,7 +81,7 @@ def login_and_extract_data():
         print(f"Request failed: {e}")
         return None
 
-# Usage
-user_data = login_and_extract_data()
-if user_data:
-    print("Extracted User Data:", user_data)
+# # Usage
+# user_data = login_and_extract_data()
+# if user_data:
+#     print("Extracted User Data:", user_data)
