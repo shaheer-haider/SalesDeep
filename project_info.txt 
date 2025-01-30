@@ -1,0 +1,43 @@
+CLIENT_REQUIREMENTS:
+=====================
+
+https://login.salesdeep.com/
+
+Extract products from the brands listed below:
+BRANDS: ALLEN BRADLEY, ABB, Baumer, Beckhoff, Bluff, Delta, Danfoss, Eaton, Emerson, Fanuc, Fluke, Lenze, Norgren, Omron, Panasonic, Parker, Phoenix, Pilz, Popperl-Fuchs, Rockwell, Rexroth, Rittal, Siemens, Sick, SEW, Schneider, Wago, Weidmeuller,  Yaskawa, 
+
+Product Data/Fields:
+Name, Model, Brand, Type, Price, Currency, Size (all separate fields), Leading, Image, Description.
+
+
+
+SOME RSEARCH FINDING:
+=====================
+
+1. BRANDS API:
+url: https://sg-leixiao.salesdeep.com/api/discover/brands
+payload: {type: "brand"}
+
+2. INSIDE BRAND:
+
+> CategoryInfo API (Types of Categories):
+url: https://sg-leixiao.salesdeep.com/api/discover/categoryInfo
+payload: {category_id: 9508}
+
+> ListOfCategoriesSalesPrice (BRAND Product)
+url: https://sg-leixiao.salesdeep.com/api/discover/listCategorySalesPrice
+payload: {pageNo: 1, pageSize: 20, category_id: 9508}
+
+3. INSIDE Subcategory:
+
+> CategoryInfo API (Types of Sub-Categories):
+url: https://sg-leixiao.salesdeep.com/api/discover/categoryInfo
+payload: {category_id: 10535}
+
+> ListOfCategoriesSalesPrice (BRAND Product)
+url: https://sg-leixiao.salesdeep.com/api/discover/listCategorySalesPrice
+payload: {pageNo: 1, pageSize: 20, category_id: 10535}
+
+4. PRODUCT DETAILED API:
+url: https://sg-leixiao.salesdeep.com/api/discover/skuDetail
+payload: {sku: "1727243580357663322", customer_info_id: "", currency: ""}
