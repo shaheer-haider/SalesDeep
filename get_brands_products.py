@@ -21,15 +21,43 @@ def get_brands_ids(file_path):
 
 
 # Fetch brand products
-def get_brand_products(brand_id=9508, page_no=1, page_size=100):
-    payload = {"category_id": brand_id, "pageNo": page_no, "pageSize": page_size, }
-    response = requests.post(LIST_BRAND_PRODUCTS_URL, json=payload)
+def get_brand_products(auth_data, brand_id, page_no=1, page_size=100): 
+    token = auth_data[0].get("token")
+    headers = {
+        "accept": "application/json, text/plain, */*",
+        "authorization": token,
+        "cache-control": "no-cache",
+        "content-type": "application/json;charset=UTF-8",
+    }
+    url = "https://sg-leixiao.salesdeep.com/api/discover/listCategorySalesPrice"
+    payload = {"category_id": brand_id, "pageNo": page_no, "pageSize": page_size}
     
+    response = requests.post(url, json=payload, headers=headers)
+
     if response.status_code == 200:
         data = response.json()
-        if data.get("Status") == 0:
-            return data  # Returning product list
+        return data
     return []
+
+# Fetch products details:
+def get_product_details(auth_data, sku): 
+    token = auth_data[0].get("token")
+    headers = {
+        "accept": "application/json, text/plain, */*",
+        "authorization": token,
+        "cache-control": "no-cache",
+        "content-type": "application/json;charset=UTF-8",
+    }
+    url = "https://sg-leixiao.salesdeep.com/api/discover/skuDetail"
+    payload = {'sku': sku, 'customer_info_id': "", 'currency': ""}
+    
+    response = requests.post(url, json=payload, headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    return []
+
 
 
 # Main function
@@ -42,33 +70,65 @@ def main():
     brands_data = get_brands(auth_data)
 
     for brand in brands_data:
-        print(brand)
+        # print(brand)
         catagory_id = brand.get('id')
 
-        # Get Brand product data:
-        brand_products_data = get_brand_products(catagory_id, 1, 100)
-        if brand_products_data is not []:
-            print("This is brand_products_data: ", brand_products_data)
-        # total= brand_products_data['data'].get("total")
-        # per_page= brand_products_data['data'].get("per_page")
-        # current_page= brand_products_data['data'].get("current_page")
-        # last_page= brand_products_data['data'].get("last_page")
-        # print("Total: ", total, " pages:", last_page)
+        # call brand products API function:
+        brand_products_data = get_brand_products(auth_data=auth_data, brand_id=catagory_id)
+        if brand_products_data:
+            last_page = brand_products_data.get('data', {}).get('last_page', None)
+            print(last_page)
+            exit()
 
+            for page_no in range(1, int(last_page)+1):
+                brand_products_data = get_brand_products(auth_data=auth_data, brand_id=catagory_id, page_no=page_no)
+                if brand_products_data is not []:
+                    brand_products = brand_products_data.get('data')
+                    
+                    for brand_product in brand_products:
+                        sku = brand_product.get('sku')
 
-        # for page_no in range(1, last_page+1):
-        #     brand_products_data = get_brand_products(catagory_id, page_no, per_page)
-        #     print("This is brand_products_data: ", brand_products_data)
-        #     break
-    
+                        # call product details API function
+                        product_details = get_product_details(auth_data=auth_data, sku=sku)
+                        
+                        product_id = product_details.get('product_id')
+                        product_name = product_details.get('product_name')
+                        model = product_details.get('model')
+                        brand_name = product_details.get('brand_name')
+                        type = product_details.get('category_txt', '-')
+                        length = product_details.get('length', '-') + product_details.get('length_unit')
+                        width = product_details.get('width', '-') + product_details.get('width_unit')
+                        height = product_details.get('height', '-') + product_details.get('height_unit') 
+                        size = f"{length},{width},{height}"
+                        weight = product_details.get('weight') + product_details.get('weight_unit')
+                        Leading = product_details.get('leadings')[0].get('leading')
+                        condition = product_details.get("spec", {}).get("condition_name", "-")
+                        imgs = product_details.get('imgs')
+                        image_url = product_details.get("image")
 
-    # Get Brands IDs:
-    base_dir = "./DATA/"
-    brands_ids = get_brands_ids(os.path.join(base_dir+'brands.csv'))
-    print(len(brands_ids))
+                        # Extract pricing
+                        prices = product_details.get("leadings", [])[0].get("priceList", [])
+                        price_texts = []
+                        for price in prices:
+                            price_texts.append(f"${price['unit_price']} {price['qty_txt2']}")
+                        price_str = " ".join(price_texts)
+                        
+                        # Extract description
+                        descriptions = product_details.get("descriptions", [])
+                        description_name = "-"
+                        description_content = "-"
+                        for desc in descriptions:
+                            if desc["language_name"].lower() == "english":
+                                description_name = desc["name"] if desc["name"] else model
+                                description_content = desc["description"]
+                                break
 
-    brands_products = get_brand_products()
-    print(brands_products)
+                        break
+                    break
+                break
+            break
+        break
+
 
 if __name__ == "__main__":
     main()

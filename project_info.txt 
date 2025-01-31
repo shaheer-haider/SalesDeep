@@ -8,6 +8,7 @@ BRANDS: ALLEN BRADLEY, ABB, Baumer, Beckhoff, Bluff, Delta, Danfoss, Eaton, Emer
 
 Product Data/Fields:
 Name, Model, Brand, Type, Price, Currency, Size (all separate fields), Leading, Image, Description.
+Name, Model, Brand, Type, Size (all separate fields), Price, Currency, Leading, Image, Description.
 
 
 
