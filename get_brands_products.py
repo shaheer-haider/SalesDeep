@@ -88,6 +88,7 @@ def main():
 
                         # call product details API function
                         product_details = get_product_details(auth_data=auth_data, sku=sku)
+                        product_details = product_details.get('data', {})
                         
                         product_id = product_details.get('product_id')
                         product_name = product_details.get('product_name')
@@ -97,9 +98,9 @@ def main():
                         length = f"{product_details.get('length', '-')}{product_details.get('length_unit')}"
                         width = f"{product_details.get('width', '-')}{product_details.get('width_unit')}"
                         height = f"{product_details.get('height', '-')}{product_details.get('height_unit')}"
-                        size = "{length},{width},{heigh}t}"
-                        weight = product_details.get('weight') + product_details.get('weight_unit')
-                        Leading = product_details.get('leadings')[0].get('leading')
+                        size = f"{length},{width},{height}"
+                        weight = f"{product_details.get('weight')}{product_details.get('weight_unit')}"
+                        Leading = product_details.get('leadings', [])[0].get('leading', "-")
                         condition = product_details.get("spec", {}).get("condition_name", "-")
                         imgs = product_details.get('imgs')
                         image_url = product_details.get("image")
@@ -120,6 +121,29 @@ def main():
                                 description_name = desc["name"] if desc["name"] else model
                                 description_content = desc["description"]
                                 break
+
+                        
+                        product_info = {
+                            'product_id': product_id, 
+                            'product_name': product_name, 
+                            'model': model, 
+                            'brand_name': brand_name, 
+                            'type': type, 
+                            'length': length, 
+                            'width': width, 
+                            'height': height, 
+                            'size': size, 
+                            'weight': weight, 
+                            'Leading': Leading, 
+                            'condition': condition, 
+                            'imgs': imgs, 
+                            'image_url': image_url, 
+                            'price_str': price_str, 
+                            'description_name': description_name, 
+                            'description_content': description_content 
+
+                        }
+                        print(product_info)
 
                         break
                     break
