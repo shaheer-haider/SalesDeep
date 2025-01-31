@@ -1,11 +1,12 @@
 import os
+import rds
+import csv
 import json
 import requests
-import csv
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv("./env")
+load_dotenv()
 
 def login_and_extract_data():
     """
@@ -44,7 +45,7 @@ def login_and_extract_data():
         # Extract relevant data
         if response_json.get("Status") == 0:  # Check if login was successful
             user_data = response_json.get("data", {})
-            extracted_info = {
+            extracted_info = [{
                 "user_uid": user_data.get("user_uid"),
                 "nickname": user_data.get("nickname"),
                 "user_mail": user_data.get("user_mail"),
@@ -58,20 +59,23 @@ def login_and_extract_data():
                 "UserGroupName": user_data.get("user_group", {}).get("UserGroupName"),
                 "country_name": user_data.get("countryInfo", {}).get("name"),
                 "department_name": user_data.get("department_info", {}).get("department_name"),
-            }
-            
-              # Save as CSV
-            csv_filename = "./DATA/user_info.csv"
-            os.makedirs(os.path.dirname(csv_filename), exist_ok=True)  # Ensure the directory exists
+            }]
 
-            with open(csv_filename, mode='w', newline='', encoding='utf-8') as csv_file:
-                writer = csv.DictWriter(csv_file, fieldnames=extracted_info.keys())
-                writer.writeheader()
-                writer.writerow(extracted_info)
+            # # Save as CSV
+            # csv_filename = "./DATA/user_info.csv"
+            # os.makedirs(os.path.dirname(csv_filename), exist_ok=True)  # Ensure the directory exists
 
-            print(f"CSV file '{csv_filename}' saved successfully!")
+            # with open(csv_filename, mode='w', newline='', encoding='utf-8') as csv_file:
+            #     writer = csv.DictWriter(csv_file, fieldnames=extracted_info.keys())
+            #     writer.writeheader()
+            #     writer.writerow(extracted_info)
 
-            return extracted_info  # Return extracted data as dictionary
+            # print(f"CSV file '{csv_filename}' saved successfully!")
+
+            #Database
+            db_connection = rds.get_db_connection()
+            rds.insert_data_into_db(db_connection=db_connection, table_name='users', data=extracted_info)
+            return extracted_info
 
         else:
             print("Error: Login failed or no data extracted.")

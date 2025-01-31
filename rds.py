@@ -49,7 +49,7 @@ def get_data_from_db(table_name):
     finally:
         connection.close()  # Close the connection automatically
 
-def insert_data_into_db(table_name, data, db_connection=None, chunk_size=1000):
+def insert_data_into_db(db_connection, table_name, data, chunk_size=1000):
     """
     Inserts a list of dictionaries into a specified table with support for "ON DUPLICATE KEY UPDATE".
     """

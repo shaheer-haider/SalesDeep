@@ -41,43 +41,25 @@ def main():
     # Get Brands Data:
     brands_data = get_brands(auth_data)
 
-    for brands in brands_data:
-        catagory_id = brands.get('id')
+    for brand in brands_data:
+        print(brand)
+        catagory_id = brand.get('id')
 
         # Get Brand product data:
         brand_products_data = get_brand_products(catagory_id, 1, 100)
-        total= brand_products_data['data'].get("total")
-        per_page= brand_products_data['data'].get("per_page")
-        current_page= brand_products_data['data'].get("current_page")
-        last_page= brand_products_data['data'].get("last_page")
+        if brand_products_data is not []:
+            print("This is brand_products_data: ", brand_products_data)
+        # total= brand_products_data['data'].get("total")
+        # per_page= brand_products_data['data'].get("per_page")
+        # current_page= brand_products_data['data'].get("current_page")
+        # last_page= brand_products_data['data'].get("last_page")
+        # print("Total: ", total, " pages:", last_page)
 
-        for page_no in range(1, last_page+1):
-            brand_products_data = get_brand_products(catagory_id, page_no, per_page)
-            for products_data in brand_products_data:
-                
-                product_id = bramds_product_data"product_id": "1727243580357663321",
-                "sku": "1727243580357663322",
-                "spec_name": "",
-                "condition": 1,
-                "image": "https:\/\/crmfiles-1306719578.cos.ap-guangzhou.myqcloud.com\/product\/638603264482198413?imageMogr2\/format\/jpg",
-                "brand_id": 4,
-                "size": "55cm,40cm,20cm",
-                "brand_name": "ALLEN-BRADLEY",
-                "model": "2090-CFBM7DD-CEAF90",
-                "product_name": "2090-CFBM7DD-CEAF90",
-                "stock_qty": 0,
-                "is_favorite": 0,
-                "condition_name": "New Sealed Under Guarantee",
-                "qty": 1,
-                "leading": "In Stock",
-                "origin_price": 0,
-                "price": "976.69",
-                "unit_price": "976.69",
-                "unit_origin": 0,
-                "currency": "USD",
-                "rid": "1731161464100000409",
-                "symbol": "$"
 
+        # for page_no in range(1, last_page+1):
+        #     brand_products_data = get_brand_products(catagory_id, page_no, per_page)
+        #     print("This is brand_products_data: ", brand_products_data)
+        #     break
     
 
     # Get Brands IDs:

@@ -1,6 +1,6 @@
 id,parent_id,label,stage,sku_num,image,all_sku_num
 1729821310607242434,3,3M,2,0,,52
-9508,3,ALLEN-BRADLEY,2,0,,13502
+9508,3,ALLEN-BRADLEY,2,0,,14250
 9517,3,ABB,2,0,,62840
 9519,3,Advantech,2,0,,114
 10742,3,Autonics,2,0,,18
@@ -453,7 +453,7 @@ id,parent_id,label,stage,sku_num,image,all_sku_num
 1734918392840103346,3,RY-relay module,2,0,,32
 1736154437715479128,3,RZ,2,0,,3
 1736844915664808486,3,raise 3D,2,0,,10
-9505,3,Siemens,2,0,,9943
+9505,3,Siemens,2,0,,13191
 9506,3,Semikron,2,0,,218
 9518,3,SEW,2,0,,59
 9531,3,SMC,2,0,,524

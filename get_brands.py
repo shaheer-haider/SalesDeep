@@ -1,9 +1,10 @@
 import requests
 import csv
+import rds
 from login import login_and_extract_data 
 
 def get_brands(auth_data):
-    token = auth_data.get("token")
+    token = auth_data[0].get("token")
     headers = {
         "accept": "application/json, text/plain, */*",
         "authorization": token,
@@ -19,35 +20,39 @@ def get_brands(auth_data):
         brand_data = response.json().get("data", {}).get("data", [])
         
         # Process data for CSV
-        csv_data = []
+        data = []
         for category in brand_data:
             for brand in category.get("children", []):
-                csv_data.append([
-                    brand.get("id"),
-                    brand.get("parent_id"),
-                    brand.get("label"),
-                    brand.get("stage"),
-                    brand.get("sku_num"),
-                    brand.get("image"),
-                    brand.get("all_sku_num")
-                ])
+                data.append({
+                    "id": brand.get("id"),
+                    "parent_id": brand.get("parent_id"),
+                    "label": brand.get("label"),
+                    "stage": brand.get("stage"),
+                    "sku_num": brand.get("sku_num"),
+                    "image": brand.get("image"),
+                    "all_sku_num": brand.get("all_sku_num")
+                })
         
-        # Save to CSV
-        file_name = "brands.csv"
-        with open(f"./DATA/{file_name}", "w", newline="", encoding="utf-8") as file:
-            writer = csv.writer(file)
-            writer.writerow(["id", "parent_id", "label", "stage", "sku_num", "image", "all_sku_num"])
-            writer.writerows(csv_data)
+        # # Save to CSV
+        # file_name = "brands.csv"
+        # with open(f"./DATA/{file_name}", "w", newline="", encoding="utf-8") as file:
+        #     writer = csv.writer(file)
+        #     writer.writerow(["id", "parent_id", "label", "stage", "sku_num", "image", "all_sku_num"])
+        #     writer.writerows(csv_data)
         
-        return brand_data
+        #Database
+        db_connection = rds.get_db_connection()
+        rds.insert_data_into_db(db_connection=db_connection, table_name='brands', data=data)
+
+        return data
     else:
         print("Failed to fetch brands:", response.text)
         return None
 
-# # Example usage
-# if __name__ == "__main__":
-#     # Get authentication details from login function
-#     auth_data = login_and_extract_data()
-#     brands = get_brands(auth_data)
-#     print(brands)
-#     print("Brands fetched:", len(brands) if brands else 0)
+# Example usage
+if __name__ == "__main__":
+    # Get authentication details from login function
+    auth_data = login_and_extract_data()
+    brands = get_brands(auth_data)
+    print(brands)
+    print("Brands fetched:", len(brands) if brands else 0)
