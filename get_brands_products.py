@@ -3,7 +3,7 @@ import csv
 import json
 import requests
 
-from login import login_and_extract_data
+from get_users import login_and_extract_data
 from get_brands import get_brands
 
 # API URLs

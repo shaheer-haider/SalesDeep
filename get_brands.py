@@ -1,7 +1,7 @@
 import requests
 import csv
 import rds
-from login import login_and_extract_data 
+from get_users import login_and_extract_data 
 
 def get_brands(auth_data):
     token = auth_data[0].get("token")
