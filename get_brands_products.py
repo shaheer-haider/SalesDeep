@@ -77,13 +77,11 @@ def main():
         brand_products_data = get_brand_products(auth_data=auth_data, brand_id=catagory_id)
         if brand_products_data:
             last_page = brand_products_data.get('data', {}).get('last_page', None)
-            print(last_page)
-            exit()
-
+            
             for page_no in range(1, int(last_page)+1):
                 brand_products_data = get_brand_products(auth_data=auth_data, brand_id=catagory_id, page_no=page_no)
-                if brand_products_data is not []:
-                    brand_products = brand_products_data.get('data')
+                if brand_products_data:
+                    brand_products = brand_products_data.get('data', {}).get('data', None)
                     
                     for brand_product in brand_products:
                         sku = brand_product.get('sku')
@@ -96,10 +94,10 @@ def main():
                         model = product_details.get('model')
                         brand_name = product_details.get('brand_name')
                         type = product_details.get('category_txt', '-')
-                        length = product_details.get('length', '-') + product_details.get('length_unit')
-                        width = product_details.get('width', '-') + product_details.get('width_unit')
-                        height = product_details.get('height', '-') + product_details.get('height_unit') 
-                        size = f"{length},{width},{height}"
+                        length = f"{product_details.get('length', '-')}{product_details.get('length_unit')}"
+                        width = f"{product_details.get('width', '-')}{product_details.get('width_unit')}"
+                        height = f"{product_details.get('height', '-')}{product_details.get('height_unit')}"
+                        size = "{length},{width},{heigh}t}"
                         weight = product_details.get('weight') + product_details.get('weight_unit')
                         Leading = product_details.get('leadings')[0].get('leading')
                         condition = product_details.get("spec", {}).get("condition_name", "-")
