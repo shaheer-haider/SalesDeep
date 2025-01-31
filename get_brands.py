@@ -2,9 +2,7 @@ import requests
 import csv
 from login import login_and_extract_data 
 
-def get_brands():
-    # Get authentication details from login function
-    auth_data = login_and_extract_data()
+def get_brands(auth_data):
     token = auth_data.get("token")
     headers = {
         "accept": "application/json, text/plain, */*",
@@ -46,7 +44,10 @@ def get_brands():
         print("Failed to fetch brands:", response.text)
         return None
 
-# Example usage
-if __name__ == "__main__":
-    brands = get_brands()
-    print("Brands fetched:", len(brands) if brands else 0)
+# # Example usage
+# if __name__ == "__main__":
+#     # Get authentication details from login function
+#     auth_data = login_and_extract_data()
+#     brands = get_brands(auth_data)
+#     print(brands)
+#     print("Brands fetched:", len(brands) if brands else 0)
