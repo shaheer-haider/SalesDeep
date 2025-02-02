@@ -90,15 +90,13 @@ def insert_data_into_db(db_connection, table_name, data, chunk_size=1000):
 
 # # main function
 # if __name__ == "__main__":
-#     users = get_data_from_db('users')  # Table name should be 'users' as per your update
-#     print(f"Users: {users}")
+#     db_connection = get_db_connection()
+#     # users = get_data_from_db('users')  # Table name should be 'users' as per your update
+#     # print(f"Users: {users}")
 
 #     sample_data = [
-#         {"user_uid": 173736839589664, "nickname": "Ali", "user_mail": "ali@example.com", "token": "xyz789", "expires_in": 604800, "user_type": 1, "isSuperAdmin": 0, 'company_id': 341, 'company_name': "Ali", 'user_group_id': 234324, 'UserGroupName':'sad', 'country_name': 'adad', 'department_name':'afdsaf'},
-#         {"user_uid": 173736839589665, "nickname": "Ahmed", "user_mail": "ahmed@example.com", "token": "xyz790", "expires_in": 604800, "user_type": 1, "isSuperAdmin": 0, 'company_id': 342, 'company_name': "Ahmed Corp", 'user_group_id': 234325, 'UserGroupName':'manager', 'country_name': 'Pakistan', 'department_name':'HR'},
-#         {"user_uid": 17368395896633, "nickname": "Sarah", "user_mail": "sarah@example.com", "token": "xyz791", "expires_in": 604800, "user_type": 2, "isSuperAdmin": 0, 'company_id': 343, 'company_name': "Sarah Ltd", 'user_group_id': 234326, 'UserGroupName':'admin', 'country_name': 'USA', 'department_name':'Marketing'},
-#         {"user_uid": 1737368395896642, "nickname": "John", "user_mail": "john@example.com", "token": "xyz792", "expires_in": 604800, "user_type": 1, "isSuperAdmin": 0, 'company_id': 344, 'company_name': "John's Co", 'user_group_id': 234327, 'UserGroupName':'dev', 'country_name': 'Canada', 'department_name':'Development'},
-#         {"user_uid": 17368395896612, "nickname": "Mira", "user_mail": "mira@example.com", "token": "xyz793", "expires_in": 604800, "user_type": 1, "isSuperAdmin": 0, 'company_id': 345, 'company_name': "Mira Technologies", 'user_group_id': 234328, 'UserGroupName':'ops', 'country_name': 'UK', 'department_name':'Operations'}
+#         {'product_id': 13216337, 'product_name': '3M734 series P120 water sandpaper for car beauty polishing, sanding leather, water sandpaper, dry and wet', 'model': 'P120', 'brand_name': '3M', 'type': 'Industrial Grinding / Grinding sandpaper', 'length': '280mm', 'width': '230mm', 'height': 'mm', 'size': '280mm,230mm,mm', 'weight': '10g', '`leading`': 'In Stock', '`condition`': 'New Sealed Under Guarantee', 'imgs': "['https://cbu01.alicdn.com/img/ibank/O1CN01j948dU1JZHRpJPomf_!!2213299601042-0-cib.jpg']", 'image_url': 'https://cbu01.alicdn.com/img/ibank/O1CN01j948dU1JZHRpJPomf_!!2213299601042-0-cib.jpg', 'price_str': '$0.75 (1-9) $0.74 (10-99) $0.73 (100-199) $0.71 (≥200)', 'description_name': 'P120', 'description_content': 'Product Name: Sandpaper<br/><br>Granularity: P120<br/><br>Abrasive: High quality alumina<br/><br>Usage: dry mill/water mill<br/><br>Specification: 50 sheets per book<br/><br>Product features: Sharp grinding, precise polishing<br/><br>Product Usage: 1. Used for polishing mechanical equipment such as automobiles, ship hulls, and machine tools, as well as polishing precision instruments<br/><br>Light. 2. Used for various alloy products, stainless steel products, non-ferrous metals, black gold<br/><br>Processing and polishing of metal components such as plates and impeller blades. 3. Used for high-end homes<br/><br>Painting and polishing of furniture and wooden products, as well as precision grinding and polishing of jewelry, handicrafts, rattan products, etc.<br/><br>4. Used for polishing oil paint surfaces such as piano instruments and atomic ash, and can be used on jade artifacts<br/><br>Jewelry, jewelry, steel pipes, plastic shells, etc.<br/><br>Product size: 230 * 280mm'},
+#         {'product_id': 1731381173202810403, 'product_name': '14', 'model': 'T605F14', 'brand_name': '3M', 'type': 'Accessories', 'length': 'cm', 'width': 'cm', 'height': 'cm', 'size': 'cm,cm,cm', 'weight': 'kg', '`leading`': 'In Stock', '`condition`': 'New Sealed Under Guarantee', 'imgs': "[]", 'image_url': '', 'price_str': '', 'description_name': 'T605F', 'description_content': 'T605F'}
 #     ]
 
-#     insert_data_into_db("users", sample_data, chunk_size=2000)
+#     insert_data_into_db(db_connection=db_connection, table_name='products', data=sample_data, chunk_size=2000)

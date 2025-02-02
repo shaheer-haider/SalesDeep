@@ -2,6 +2,7 @@ import os
 import csv
 import json
 import requests
+import rds
 
 from get_users import login_and_extract_data
 from get_brands import get_brands
@@ -78,11 +79,11 @@ def main():
         if brand_products_data:
             last_page = brand_products_data.get('data', {}).get('last_page', None)
             
+            all_products = []
             for page_no in range(1, int(last_page)+1):
                 brand_products_data = get_brand_products(auth_data=auth_data, brand_id=catagory_id, page_no=page_no)
                 if brand_products_data:
                     brand_products = brand_products_data.get('data', {}).get('data', None)
-                    
                     for brand_product in brand_products:
                         sku = brand_product.get('sku')
 
@@ -102,8 +103,8 @@ def main():
                         weight = f"{product_details.get('weight')}{product_details.get('weight_unit')}"
                         Leading = product_details.get('leadings', [])[0].get('leading', "-")
                         condition = product_details.get("spec", {}).get("condition_name", "-")
-                        imgs = product_details.get('imgs')
-                        image_url = product_details.get("image")
+                        imgs = str(product_details.get('imgs'))
+                        image_url = str(product_details.get("image"))
 
                         # Extract pricing
                         prices = product_details.get("leadings", [])[0].get("priceList", [])
@@ -134,22 +135,18 @@ def main():
                             'height': height, 
                             'size': size, 
                             'weight': weight, 
-                            'Leading': Leading, 
-                            'condition': condition, 
+                            '`leading`': Leading, 
+                            '`condition`': condition, 
                             'imgs': imgs, 
                             'image_url': image_url, 
                             'price_str': price_str, 
                             'description_name': description_name, 
                             'description_content': description_content 
-
                         }
-                        print(product_info)
-
-                        break
-                    break
-                break
-            break
-        break
+                        all_products.append(product_info)
+            print(f"Brand: {brand_name} has {len(all_products)} products")
+            db_connection = rds.get_db_connection()
+            rds.insert_data_into_db(db_connection=db_connection, table_name='products', data=all_products)
 
 
 if __name__ == "__main__":
