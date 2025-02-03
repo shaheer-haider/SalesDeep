@@ -3,9 +3,106 @@ import csv
 import json
 import requests
 import rds
+from dotenv import load_dotenv
 
-from get_users import login_and_extract_data
-from get_brands import get_brands
+# Load environment variables
+load_dotenv()
+
+def login_and_extract_data():
+    """
+    Logs in to the API, extracts relevant user data, saves it as a CSV, and returns the data as a dictionary.
+    
+    Returns:
+        dict: Extracted user information.
+    """
+    # Fetch credentials from environment variables
+    username = os.environ.get('USERNAME')
+    password = os.environ.get('PASSWORD')
+
+    # API endpoint
+    url = 'https://sg-d.salesdeep.com/v2/login/login'
+
+    # Headers for the request
+    headers = {
+        'accept': 'application/json, text/plain, */*',
+        'content-type': 'application/json',
+        'origin': 'https://login.salesdeep.com',
+        'referer': 'https://login.salesdeep.com/',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36'
+    }
+
+    # Payload (login credentials)
+    payload = {'username': username, 'pwd': password}
+
+    try:
+        # Send POST request
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()  # Raise an error for HTTP failures (4xx, 5xx)
+
+        # Parse JSON response
+        response_json = response.json()
+
+        # Extract relevant data
+        if response_json.get("Status") == 0:  # Check if login was successful
+            user_data = response_json.get("data", {})
+            extracted_info = [{
+                "user_uid": user_data.get("user_uid"),
+                "nickname": user_data.get("nickname"),
+                "user_mail": user_data.get("user_mail"),
+                "token": user_data.get("token"),
+                "expires_in": user_data.get("expires_in"),
+                "user_type": user_data.get("user_type"),
+                "isSuperAdmin": user_data.get("isSuperAdmin"),
+                "company_id": user_data.get("company_info", {}).get("company_id"),
+                "company_name": user_data.get("company_info", {}).get("company_name"),
+                "user_group_id": user_data.get("user_group", {}).get("user_group_id"),
+                "UserGroupName": user_data.get("user_group", {}).get("UserGroupName"),
+                "country_name": user_data.get("countryInfo", {}).get("name"),
+                "department_name": user_data.get("department_info", {}).get("department_name"),
+            }]
+            return extracted_info
+        else:
+            print("Error: Login failed or no data extracted.")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+        return None
+
+
+def get_brands(auth_data):
+    token = auth_data[0].get("token")
+    headers = {
+        "accept": "application/json, text/plain, */*",
+        "authorization": token,
+        "cache-control": "no-cache",
+        "content-type": "application/json;charset=UTF-8",
+    }
+    url = "https://sg-leixiao.salesdeep.com/api/discover/brands"
+    payload = {"type": "brand"}
+    
+    response = requests.post(url, json=payload, headers=headers)
+    
+    if response.status_code == 200:
+        brand_data = response.json().get("data", {}).get("data", [])
+        
+        # Process data for CSV
+        data = []
+        for category in brand_data:
+            for brand in category.get("children", []):
+                data.append({
+                    "id": brand.get("id"),
+                    "parent_id": brand.get("parent_id"),
+                    "label": brand.get("label"),
+                    "stage": brand.get("stage"),
+                    "sku_num": brand.get("sku_num"),
+                    "image": brand.get("image"),
+                    "all_sku_num": brand.get("all_sku_num")
+                })        
+        return data
+    else:
+        print("Failed to fetch brands:", response.text)
+        return None
+
 
 # API URLs
 LIST_BRAND_PRODUCTS_URL = "https://sg-leixiao.salesdeep.com/api/discover/listCategorySalesPrice"
@@ -64,11 +161,21 @@ def get_product_details(auth_data, sku):
 # Main function
 def main():
 
+    # Database connection:
+    db_connection = rds.get_db_connection()
+
     # Login and get auth_data:
     auth_data = login_and_extract_data()
+    # Insert auth_data into database on users table:
+    rds.insert_data_into_db(db_connection=db_connection, table_name='users', data=auth_data)
+
+    db_connection = rds.get_db_connection()
 
     # Get Brands Data:
     brands_data = get_brands(auth_data)
+    # Insert brands_data into database on brands table:
+    rds.insert_data_into_db(db_connection=db_connection, table_name='brands', data=brands_data)
+
 
     for brand in brands_data:
         # print(brand)
@@ -110,7 +217,7 @@ def main():
                         prices = product_details.get("leadings", [])[0].get("priceList", [])
                         price_texts = []
                         for price in prices:
-                            price_texts.append(f"${price['unit_price']} {price['qty_txt2']}")
+                            price_texts.append(f"{price['currency_symbol']}{price['unit_price']} {price['qty_txt2']}")
                         price_str = " ".join(price_texts)
                         
                         # Extract description
@@ -144,9 +251,10 @@ def main():
                             'description_content': description_content 
                         }
                         all_products.append(product_info)
+                print(page_no)
+                db_connection = rds.get_db_connection()
+                rds.insert_data_into_db(db_connection=db_connection, table_name='products', data=all_products)
             print(f"Brand: {brand_name} has {len(all_products)} products")
-            db_connection = rds.get_db_connection()
-            rds.insert_data_into_db(db_connection=db_connection, table_name='products', data=all_products)
 
 
 if __name__ == "__main__":
