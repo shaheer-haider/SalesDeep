@@ -6,24 +6,12 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import concurrent.futures
 from utils.mail import send_email
-from utils.storage.s3 import upload_file
+from utils.storage.s3 import upload_file, get_number_of_files
 from utils.storage.rds import store_products
-import dotenv
 import os
+from utils.salesdeep.brands import BRAND_IDS
 
-dotenv.load_dotenv()
-
-start_time = datetime.now()
-print("Script started at:", start_time)
-
-# login_details = login_and_extract_data()
-login_details = [{'user_uid': '1737368395896625168', 'nickname': 'Dzevad', 'user_mail': '6lRMv7eVFRKjsB3olCz75FqFVAr2ibSHKcAK4IdI3jI=', 'token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIiLCJhdWQiOiIiLCJpYXQiOjE3Mzg1Nzk4NDEsIm5iZiI6MTczODU3OTk0MSwiZXhwIjoxNzM5MTg0NjQxLCJpZCI6IjE3MzczNjgzOTU4OTY2MjUxNjgiLCJhbm9ueW1vdXMiOiJubyIsInVzZXJfdHlwZSI6IjAiLCJ1c2VyX2lkIjoiMTczNzM1NTQ2NzczNjA3OTE4MSIsImNvbXBhbnlfaWQiOiIxNzM3MzY4MjExMTAwMDAxOTA2In0.nonQlDpK59VgLhByqfh79K3KrGcP7xmruk5OR5Zwol4', 'expires_in': 604800, 'user_type': 0, 'isSuperAdmin': 1, 'company_id': '1737368211100001906', 'company_name': None, 'user_group_id': '1737368211110005774', 'UserGroupName': '超级管理员', 'country_name': 'Unknown nationality', 'department_name': ''}]
-
-if not login_details:
-    print("Login failed")
-    exit()
-
-def process_brand(brand):
+def process_brand(brand, login_details):
     token = login_details[0]['token']
     page = 1
     page_size = 1000
@@ -72,31 +60,52 @@ def process_brand(brand):
         })
     return brand_name, brand_details
 
-all_brands_products = []
-datetime_folder = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-os.makedirs(datetime_folder, exist_ok=True)
-file_links = []
+def scrap_single_brand(brand_name, brand_id, datetime_folder, number_of_brands):
+    start_time = datetime.now()
+    print(f"Started scraping {brand_name} at:", start_time)
 
-with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-    futures = [executor.submit(process_brand, brand) for brand in BRAND_IDS.items()]
-    for future in concurrent.futures.as_completed(futures):
-        brand_name, brand_products = future.result()
-        all_brands_products.extend(brand_products)
-        brand_filename = f"{datetime_folder}/{brand_name}.xlsx"
-        pd.DataFrame(brand_products).to_excel(brand_filename, index=False)
-        upload_file(brand_filename, f"{datetime_folder}/{brand_name}.xlsx")
-        file_links.append(f"https://salesdeep-scrapped-data.s3.us-east-2.amazonaws.com/{datetime_folder}/{brand_name}.xlsx")
+    login_details = login_and_extract_data()
+    if not login_details:
+        raise Exception("Login failed")
 
-complete_filename = f"{datetime_folder}/complete.xlsx"
-pd.DataFrame(all_brands_products).to_excel(complete_filename, index=False)
-upload_file(complete_filename, f"{datetime_folder}/complete.xlsx")
-file_links.insert(0, f"https://salesdeep-scrapped-data.s3.us-east-2.amazonaws.com/{datetime_folder}/complete.xlsx")
+    os.makedirs(datetime_folder, exist_ok=True)
 
-email_body = "SalesDeep Products have been scrapped:\n\n"
-email_body += "\n".join(file_links)
+    brand_name, brand_products = process_brand((brand_name, brand_id), login_details)
 
-send_email(email_body)
+    brand_filename = f"{datetime_folder}/{brand_name}.xlsx"
+    pd.DataFrame(brand_products).to_excel(brand_filename, index=False)
+    upload_file(brand_filename, f"{datetime_folder}/{brand_name}.xlsx")
 
-end_time = datetime.now()
-print("Script ended at:", end_time)
-print("Total execution time:", end_time - start_time)
+
+    # check if number_of_brands is same as number of files in s3 buckets's folder
+    number_of_files = get_number_of_files(datetime_folder)
+    if number_of_files == number_of_brands:
+        # download all files and merge them
+        complete_filename = f"{datetime_folder}/complete.xlsx"
+        complete_df = pd.concat([pd.read_excel(f"https://salesdeep-scrapped-data.s3.us-east-2.amazonaws.com/{datetime_folder}/{brand}.xlsx") for brand in BRAND_IDS.keys()])
+        complete_df.to_excel(complete_filename, index=False)
+        upload_file(complete_filename, f"{datetime_folder}/complete.xlsx")
+        email_body = f"""
+<h2>SalesDeep Products for all brands have been scrapped</h2>
+
+<p>Download links:</p>
+{"".join([f"<a href='https://salesdeep-scrapped-data.s3.us-east-2.amazonaws.com/{datetime_folder}/{brand}.xlsx'>{brand}</a><br>" for brand in BRAND_IDS.keys()])}
+
+<p>Complete File:</p>
+<a href='https://salesdeep-scrapped-data.s3.us-east-2.amazonaws.com/{datetime_folder}/complete.xlsx'>Download</a>
+"""
+        send_email(email_body)
+
+    # file_link = f"https://salesdeep-scrapped-data.s3.us-east-2.amazonaws.com/{datetime_folder}/{brand_name}.xlsx"
+
+    # email_body = f"SalesDeep Products for {brand_name} have been scrapped:\n\n{file_link}"
+    # send_email(email_body)
+
+    end_time = datetime.now()
+    print(f"Finished scraping {brand_name} at:", end_time)
+    print("Total execution time:", end_time - start_time)
+
+    return {
+        'statusCode': 200,
+        'body': f'Successfully scraped {brand_name}'
+    }

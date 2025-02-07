@@ -9,7 +9,7 @@ BRAND_IDS = {
     # "Eaton": 52,
     # "Emerson": 45,
     # "Fanuc": 54,
-    # "Fluke": 186,
+    "Fluke": 186,
     # "Lenze": 91,
     # "Norgren": 111,
     # "Omron": 3,

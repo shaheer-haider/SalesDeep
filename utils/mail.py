@@ -12,16 +12,17 @@ config = {
     "port": 587,
     "secure": False,
     "auth": {
-        "user": os.getenv("SMTP_USERNAME"),
-        "pass": os.getenv("SMTP_PASSWORD"),
+        "user": os.environ.get("SMTP_USERNAME"),
+        "pass": os.environ.get("SMTP_PASSWORD"),
     }
 }
+
 
 def send_email(text):
     subject = f"SalesDeep Products {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     sender = {"name": "Shaheer", "email": "coder.shaheer@gmail.com"}
     recipients = [
-        # "d.kapic@hotmail.com",
+        "d.kapic@hotmail.com",
         "shaheerhaider00000@gmail.com"]
 
     msg = MIMEMultipart()

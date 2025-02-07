@@ -3,6 +3,8 @@ import os
 import json
 import dotenv
 
+dotenv.load_dotenv()
+
 def login_and_extract_data():
     """
     Logs in to the API, extracts relevant user data, saves it as a CSV, and returns the data as a dictionary.
@@ -10,9 +12,6 @@ def login_and_extract_data():
     Returns:
         dict: Extracted user information.
     """
-
-    # Load environment variables from .env file
-    dotenv.load_dotenv()
 
     # Fetch credentials from environment variables
     username = os.environ.get('USERNAME')
@@ -51,8 +50,8 @@ def login_and_extract_data():
         response.raise_for_status()  # Raise an error for HTTP failures (4xx, 5xx)
 
         # Parse JSON response
+        print("response.text", response.text)
         response_json = response.json()
-
         # Extract relevant data
         if response_json.get("Status") == 0:  # Check if login was successful
             user_data = response_json.get("data", {})
