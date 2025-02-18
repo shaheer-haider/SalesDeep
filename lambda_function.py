@@ -6,6 +6,7 @@ from utils.salesdeep.brands import BRAND_IDS
 import json
 import dotenv
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor
 
 dotenv.load_dotenv()
 
@@ -14,7 +15,9 @@ aws_secret = os.environ.get('AWS_SECRET_ACCESS_KEY')
 
 def trigger_brand_scraping(brand_name, brand_id, dt):
     if __name__ == "__main__":
-        scrap_single_brand(brand_name, brand_id, dt, len(BRAND_IDS.keys()))
+        print(f"Starting scraping process for brand: {brand_name}")
+        with ThreadPoolExecutor() as executor:
+            executor.submit(scrap_single_brand, brand_name, brand_id, dt, len(BRAND_IDS.keys()))
     else:
         lambda_client = boto3.client('lambda')
         lambda_client.invoke(
