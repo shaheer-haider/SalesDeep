@@ -1,0 +1,6 @@
+DATA
+__pycache__
+**/**/__pycache__
+*.csv
+*.xlsx
+venv
