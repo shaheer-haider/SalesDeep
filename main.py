@@ -104,11 +104,20 @@ def scrap_single_brand(brand_name, brand_id, datetime_folder, number_of_brands):
     pd.DataFrame(brand_products).to_excel(brand_filename, index=False)
     upload_file(brand_filename, f"{datetime_folder}/{brand_name}.xlsx")
 
+    end_time = datetime.now()
+    print(f"Finished scraping {brand_name} at:", end_time)
+    print("Total execution time:", end_time - start_time)
 
     # check if number_of_brands is same as number of files in s3 buckets's folder
     number_of_files_in_s3 = get_number_of_files(datetime_folder)
-    print("Number of files in S3")
+    print("Number of files in S3", number_of_files_in_s3, "of", datetime_folder)
     number_of_files = number_of_files_in_s3
+    if number_of_files - 1 == number_of_brands:
+        import time
+        time.sleep(10)
+        number_of_files_in_s3 = get_number_of_files(datetime_folder)
+        print("Number of files in S3", number_of_files_in_s3, "of", datetime_folder)
+        number_of_files = number_of_files_in_s3
     if number_of_files == number_of_brands:
         print("All brands have been scrapped")
         # download all files and merge them
@@ -131,10 +140,6 @@ def scrap_single_brand(brand_name, brand_id, datetime_folder, number_of_brands):
 
     # email_body = f"SalesDeep Products for {brand_name} have been scrapped:\n\n{file_link}"
     # send_email(email_body)
-
-    end_time = datetime.now()
-    print(f"Finished scraping {brand_name} at:", end_time)
-    print("Total execution time:", end_time - start_time)
 
     return {
         'statusCode': 200,
