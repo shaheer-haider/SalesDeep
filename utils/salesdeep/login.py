@@ -49,8 +49,6 @@ def login_and_extract_data():
         response = requests.post(url, data=payload, headers=headers)
         response.raise_for_status()  # Raise an error for HTTP failures (4xx, 5xx)
 
-        # Parse JSON response
-        print("response.text", response.text)
         response_json = response.json()
         # Extract relevant data
         if response_json.get("Status") == 0:  # Check if login was successful

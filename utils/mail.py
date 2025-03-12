@@ -23,7 +23,8 @@ def send_email(text):
     sender = {"name": "Shaheer", "email": "coder.shaheer@gmail.com"}
     recipients = [
         "d.kapic@hotmail.com",
-        "softechops@gmail.com"]
+        "softechops@gmail.com"
+    ]
 
     msg = MIMEMultipart()
     msg['From'] = f"{sender['name']} <{sender['email']}>"
