@@ -2,14 +2,10 @@ from itertools import chain
 from utils.salesdeep.api_client import ApiClient
 from utils.salesdeep.login import login_and_extract_data
 from utils.salesdeep.products import get_brand_products, get_product_details
-from utils.salesdeep.brands import BRAND_NAMES
 import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import datetime
-import concurrent.futures
-from utils.mail import send_email
-from utils.storage.s3 import upload_file, get_number_of_files
-from utils.storage.rds import store_products
+from utils.storage.s3 import upload_file
 import os
 import time
 
@@ -77,6 +73,8 @@ def process_brand(brand, total_products):
                     print(f"Skipping SKU {product['sku']} after {max_retries} failed attempts")
                     break
 
+        print(f"Processed SKU {product_from_list['sku']}...")
+
     return brand_name, brand_details
 
 def scrap_single_brand(brand, datetime_folder, number_of_brands):
@@ -95,33 +93,6 @@ def scrap_single_brand(brand, datetime_folder, number_of_brands):
     print(f"Finished scraping {brand_name} at:", end_time)
     print("Total execution time:", end_time - start_time)
 
-    # check if number_of_brands is same as number of files in s3 buckets's folder
-    number_of_files_in_s3 = get_number_of_files(datetime_folder)
-    print("Number of files in S3", number_of_files_in_s3, "of", datetime_folder)
-    number_of_files = number_of_files_in_s3
-    if number_of_files - 1 == number_of_brands:
-        import time
-        time.sleep(10)
-        number_of_files_in_s3 = get_number_of_files(datetime_folder)
-        print("Number of files in S3", number_of_files_in_s3, "of", datetime_folder)
-        number_of_files = number_of_files_in_s3
-    if number_of_files == number_of_brands:
-        print("All brands have been scrapped")
-        # download all files and merge them
-        complete_filename = f"{datetime_folder}/complete.xlsx"
-        complete_df = pd.concat([pd.read_excel(f"https://salesdeep-scrapped-data.s3.us-east-2.amazonaws.com/{datetime_folder}/{brand}.xlsx") for brand in BRAND_NAMES])
-        complete_df.to_excel(complete_filename, index=False)
-        upload_file(complete_filename, f"{datetime_folder}/complete.xlsx")
-        email_body = f"""
-<h2>SalesDeep Products for all brands have been scrapped</h2>
-
-<p>Download links:</p>
-{"".join([f"<a href='https://salesdeep-scrapped-data.s3.us-east-2.amazonaws.com/{datetime_folder}/{brand}.xlsx'>{brand}</a><br>" for brand in BRAND_NAMES])}
-
-<p>Complete File:</p>
-<a href='https://salesdeep-scrapped-data.s3.us-east-2.amazonaws.com/{datetime_folder}/complete.xlsx'>Download</a>
-"""
-        send_email(email_body)
 
     # file_link = f"https://salesdeep-scrapped-data.s3.us-east-2.amazonaws.com/{datetime_folder}/{brand_name}.xlsx"
 

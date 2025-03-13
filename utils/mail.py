@@ -18,11 +18,10 @@ config = {
 }
 
 
-def send_email(text):
-    subject = f"SalesDeep Products {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+def send_email(body, subject="SalesDeep Products Scraping Results"):
     sender = {"name": "Shaheer", "email": "coder.shaheer@gmail.com"}
     recipients = [
-        "d.kapic@hotmail.com",
+        # "d.kapic@hotmail.com",
         "softechops@gmail.com"
     ]
 
@@ -30,7 +29,7 @@ def send_email(text):
     msg['From'] = f"{sender['name']} <{sender['email']}>"
     msg['To'] = ", ".join(recipients)
     msg['Subject'] = subject
-    msg.attach(MIMEText(text, 'plain'))
+    msg.attach(MIMEText(body, 'plain'))
 
     try:
         with smtplib.SMTP(config["host"], config["port"]) as server:

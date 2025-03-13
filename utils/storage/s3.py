@@ -12,7 +12,6 @@ def upload_file(path, key):
         bucket_name = "salesdeep-scrapped-data"
         aws_key = os.environ.get('AWS_ACCESS_KEY_ID')
         aws_secret = os.environ.get('AWS_SECRET_ACCESS_KEY')
-
         s3 = boto3.client(
             's3',
             aws_access_key_id=aws_key,
