@@ -19,10 +19,32 @@ def process_brand(brand, total_products):
     brand_products = []
     print(f"Scraping {total_products} products of {brand_name} with ID {brand_id}...")
     while True:
-        products = get_brand_products(token, brand_id, page, page_size)
+        max_retries = 3
+        retry_count = 0
+
+        while retry_count < max_retries:
+            try:
+                products = get_brand_products(token, brand_id, page, page_size)
+                if not products.get("data"):
+                    print(f"No data for brand {brand_id} on page {page}, retrying...")
+                    time.sleep(5)
+                    retry_count += 1
+                    continue
+                break
+            except Exception as e:
+                print(f"Error fetching products for brand {brand_id} on page {page}: {str(e)}")
+                if retry_count < max_retries - 1:
+                    print(f"Retrying in 5 seconds... (Attempt {retry_count + 1}/{max_retries})")
+                    time.sleep(5)
+                    retry_count += 1
+                else:
+                    print(f"Skipping page {page} for brand {brand_id} after {max_retries} failed attempts")
+                    products = {"data": {"data": []}}
+                    break
+
         brand_products.extend(products["data"]["data"])
         page += 1
-        if page * page_size > total_products:
+        if page * page_size > total_products or not products["data"]["data"]:
             break
 
     brand_details = []
@@ -73,7 +95,7 @@ def process_brand(brand, total_products):
                     print(f"Skipping SKU {product['sku']} after {max_retries} failed attempts")
                     break
 
-        print(f"Processed SKU {product_from_list['sku']}...")
+        # print(f"Processed SKU {product_from_list['sku']}...")
 
     return brand_name, brand_details
 

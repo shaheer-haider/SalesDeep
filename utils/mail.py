@@ -21,7 +21,7 @@ config = {
 def send_email(body, subject="SalesDeep Products Scraping Results"):
     sender = {"name": "Shaheer", "email": "coder.shaheer@gmail.com"}
     recipients = [
-        # "d.kapic@hotmail.com",
+        "d.kapic@hotmail.com",
         "softechops@gmail.com"
     ]
 
