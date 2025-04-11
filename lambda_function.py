@@ -47,7 +47,7 @@ def distribute_scraping(brands):
     results = []
     exceptions = []
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         # Submit tasks and get futures
         futures = {
             executor.submit(scrape_brand_safe, brand, dt, len(selected_brands)): brand

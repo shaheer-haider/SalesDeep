@@ -43,11 +43,13 @@ def process_brand(brand, total_products):
                     break
 
         brand_products.extend(products["data"]["data"])
-        page += 1
         if page * page_size > total_products or not products["data"]["data"]:
             break
+        page += 1
 
     brand_details = []
+    print("Processing product details...")
+    print(f"Total products to process: {len(brand_products)}")
     for product_from_list in brand_products:
         if not product_from_list["sku"]:
             continue
@@ -59,7 +61,6 @@ def process_brand(brand, total_products):
             try:
                 product_details = get_product_details(token, product_from_list["sku"])
                 if not product_details.get("data"):
-                    print(f"No data for SKU {product['sku']}, retrying...")
                     time.sleep(5)
                     retry_count += 1
                     continue
@@ -84,15 +85,16 @@ def process_brand(brand, total_products):
                     "description": BeautifulSoup(description_html, "html.parser").get_text(),
                     "description_html": description_html,
                 })
+                print(f"Processed SKU {product_from_list['product_id']}")
                 break
             except Exception as e:
-                print(f"Error processing SKU {product['sku']}: {str(e)}")
+                print(f"Error processing SKU {product.get('product_id')}: {str(e)}")
                 if retry_count < max_retries - 1:
                     print(f"Retrying in 5 seconds... (Attempt {retry_count + 1}/{max_retries})")
                     time.sleep(5)
                     retry_count += 1
                 else:
-                    print(f"Skipping SKU {product['sku']} after {max_retries} failed attempts")
+                    print(f"Skipping SKU {product.get('product_id')} after {max_retries} failed attempts")
                     break
 
         # print(f"Processed SKU {product_from_list['sku']}...")
